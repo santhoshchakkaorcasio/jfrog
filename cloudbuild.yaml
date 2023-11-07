@@ -1,0 +1,13 @@
+steps:
+- name: 'gcr.io/cloud-builders/gcloud'
+  args: ['container', 'clusters', 'get-credentials', '$_CLUSTER_NAME', '--zone', '$_CLUSTER_ZONE', '--project', '$PROJECT_ID']
+- name: 'l.gcr.io/google/bazel'
+  args: ['build', '//my-project:my-app']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/my-app:$SHORT_SHA', '.']
+- name: 'bash'
+  args: ['curl', '-fL', 'https://getcli.jfrog.io | sh']
+- name: 'bash'
+  args: ['jfrog', 'config', 'add', 'my-artifactory', '--artifactory-url=$ARTIFACTORY_URL', '--user=$ARTIFACTORY_USER', '--password=$ARTIFACTORY_PASSWORD']
+- name: 'bash'
+  args: ['jfrog', 'rt', 'u', 'my-app/', 'my-artifactory/docker-local/']
